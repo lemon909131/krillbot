@@ -15,11 +15,15 @@ const REQUIRED_PREFIX = 'Krillion'; // adjust to match your actual required pref
 // Stores today's scores: userId -> { username, score }
 let dailyScores = new Map();
 
+client.once('ready', () => {
+  console.log(`Logged in as ${client.user.tag}`);
+});
+
 client.on('messageCreate', async (message) => {
   if (message.channel.id !== CHANNEL_ID) return;
   if (message.author.bot) return;
 
-  // Enforce the required prefix, same as before
+  // Enforce the required prefix
   if (!message.content.startsWith(REQUIRED_PREFIX)) {
     await message.delete();
     const warning = await message.channel.send(
@@ -39,14 +43,19 @@ client.on('messageCreate', async (message) => {
       username: message.author.username,
       score,
     });
+    console.log(`Recorded score for ${message.author.username}: ${score}`);
   }
 });
 
 // Runs every day at 10:00 PM Mountain Time (handles MST/MDT automatically)
 cron.schedule(
-  '0 22 * * *',
+  '0 23 * * *',
   async () => {
+    console.log('Cron job triggered at', new Date().toString());
+    console.log('Current dailyScores:', dailyScores);
+
     if (dailyScores.size === 0) {
+      console.log('No scores today, skipping announcement.');
       dailyScores.clear();
       return;
     }
@@ -64,6 +73,7 @@ cron.schedule(
     if (topUserId) {
       const channel = await client.channels.fetch(CHANNEL_ID);
       await channel.send(`🏆 Today's top score goes to <@${topUserId}> with **${topScore}**!`);
+      console.log(`Announced winner: ${topUserId} with ${topScore}`);
     }
 
     dailyScores.clear();
