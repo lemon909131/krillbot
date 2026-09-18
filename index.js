@@ -49,7 +49,7 @@ client.on('messageCreate', async (message) => {
 
 // Runs every day at 10:00 PM Mountain Time (handles MST/MDT automatically)
 cron.schedule(
-  '0 23 * * *',
+  '0 22 * * *',
   async () => {
     console.log('Cron job triggered at', new Date().toString());
     console.log('Current dailyScores:', dailyScores);
